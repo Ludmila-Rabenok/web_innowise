@@ -115,7 +115,6 @@ public class ConnectionPool {
       for (int i = 0; i < CAPACITY; i++) {
         try {
           ProxyConnection connection = free.take();
-          //из used надо тоже?
           if (!connection.isClosed()) {
             connection.reallyClose();
           }
