@@ -133,7 +133,7 @@ public class OrderServiceImpl implements OrderService {
   }
 
   @Override
-  public void approve(Order order) throws ServiceException {
+  public void approve(Order order) throws ServiceException {//утвердить
     if (order.getStatus() != Status.MODERATION) {
       LOGGER.warn("Order id={} cannot be approved. Current status={}", order.getId(), order.getStatus());
       throw new ServiceException("Order cannot be approved in status " + order.getStatus());

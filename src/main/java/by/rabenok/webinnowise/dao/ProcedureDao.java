@@ -2,7 +2,6 @@ package by.rabenok.webinnowise.dao;
 
 import by.rabenok.webinnowise.exception.DaoException;
 import by.rabenok.webinnowise.model.Procedure;
-import by.rabenok.webinnowise.model.Rating;
 
 import java.util.Optional;
 

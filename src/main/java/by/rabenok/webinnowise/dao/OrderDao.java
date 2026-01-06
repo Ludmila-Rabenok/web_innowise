@@ -11,6 +11,7 @@ public interface OrderDao {
   List<Order> findOrdersFromUser(User user) throws DaoException;
 
   void save(Order order) throws DaoException;
+
   void update(Order order) throws DaoException;
 
   List<Order> findAll() throws DaoException;
