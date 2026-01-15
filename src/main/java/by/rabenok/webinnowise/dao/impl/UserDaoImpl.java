@@ -19,7 +19,6 @@ import java.util.Optional;
 public class UserDaoImpl implements UserDao {
   public static final Logger LOGGER = LogManager.getLogger();
   private static UserDaoImpl instance = new UserDaoImpl();
-  String SQL_USER_BY_LOGIN = "SELECT id, name, role FROM users WHERE name = ?";
 
   private UserDaoImpl() {
   }
@@ -29,50 +28,72 @@ public class UserDaoImpl implements UserDao {
   }
 
   @Override
-  public Optional<Role> authenticate(String login, String password) throws DaoException {
-    String sql = "SELECT role FROM users WHERE name = ? AND password = ?";
-    Role role = null;
-    try (Connection connection = ConnectionPool.getInstance().getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
+  public String authenticate(String login, String password) throws DaoException {
+    String passFromDB = null;
+    try (Connection connection = ConnectionPool.getInstance().getConnection();
+         PreparedStatement statement = connection.prepareStatement(ConstantSql.SELECT_PASSWORD_BY_USERNAME)) {
       statement.setString(1, login);
-      statement.setString(2, password);
-      try (ResultSet rs = statement.executeQuery()) {
-        if (rs.next()) {
-          role = Role.valueOf(rs.getString("role"));
+      try (ResultSet resultSet = statement.executeQuery()) {
+        if (resultSet.next()) {
+          passFromDB = resultSet.getString("password");
         }
       }
     } catch (ConnectionException | SQLException e) {
       LOGGER.error("Error authenticating user: {}", login, e);
       throw new DaoException(e);
     }
-    return Optional.ofNullable(role);
-
-
-    boolean match = false;
-    try (Connection connection = ConnectionPool.getInstance().getConnection();
-         PreparedStatement statement = connection.prepareStatement(ConstantSql.SELECT_PASSWORD)) {
-      statement.setString(1, login);
-      try (ResultSet resultSet = statement.executeQuery()) {
-        String passFromDb;
-        if (resultSet.next()) {
-          passFromDb = resultSet.getString(1);
-          match = password.equals(passFromDb);
-        }
-      }
-    } catch (SQLException e) {
-      throw new DaoException(e);
-    }
-    return Optional.of(Role.CLIENT);
+    return passFromDB;
   }
 
   @Override
-  public Optional<User> findUserByLogin(String login) throws DaoException {
+  public Optional<Role> authorize(String login) throws DaoException {
+    try (Connection connection = ConnectionPool.getInstance().getConnection();
+         PreparedStatement ps = connection.prepareStatement(ConstantSql.SELECT_ROLE_BY_USERNAME)) {
+      ps.setString(1, login);
+      try (ResultSet resultSet = ps.executeQuery()) {
+        if (resultSet.next()) {
+          Role role = Role.valueOf(resultSet.getString("role"));
+          return Optional.of(role);
+        }
+      }
+    } catch (SQLException | ConnectionException e) {
+      LOGGER.error("Error authorize user by login: {}", login, e);
+      throw new DaoException(e);
+    }
+    return Optional.empty();
+  }
+
+  @Override
+  public Optional<User> findUserByName(String userName) throws DaoException {
     User user = null;
     try (Connection connection = ConnectionPool.getInstance().getConnection();
-         PreparedStatement statement = connection.prepareStatement(SQL_USER_BY_LOGIN)) {
-      statement.setString(1, login);
+         PreparedStatement statement = connection.prepareStatement(ConstantSql.SELECT_USER_BY_USERNAME)) {
+      statement.setString(1, userName);
       try (ResultSet resultSet = statement.executeQuery()) {
         if (resultSet.next()) {
           int id = resultSet.getInt("id");
+          String role = resultSet.getString("role");
+          user = new User();
+          user.setId(id);
+          user.setName(userName);
+          user.setRole(Role.valueOf(role));
+        }
+      }
+    } catch (ConnectionException | SQLException e) {
+      LOGGER.error("Error finding user by name: {}", userName, e);
+      throw new DaoException(e);
+    }
+    return Optional.ofNullable(user);
+  }
+
+  @Override
+  public Optional<User> findUserById(int id) throws DaoException {
+    User user = null;
+    try (Connection connection = ConnectionPool.getInstance().getConnection();
+         PreparedStatement statement = connection.prepareStatement(ConstantSql.SELECT_USER_BY_ID)) {
+      statement.setInt(1, id);
+      try (ResultSet resultSet = statement.executeQuery()) {
+        if (resultSet.next()) {
           String name = resultSet.getString("name");
           String role = resultSet.getString("role");
           user = new User();
@@ -82,7 +103,7 @@ public class UserDaoImpl implements UserDao {
         }
       }
     } catch (ConnectionException | SQLException e) {
-      LOGGER.error("Error finding user by login: {}", login, e);
+      LOGGER.error("Error finding user by id: {}", id, e);
       throw new DaoException(e);
     }
     return Optional.ofNullable(user);

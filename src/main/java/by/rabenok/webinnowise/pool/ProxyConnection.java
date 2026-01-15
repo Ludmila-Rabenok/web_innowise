@@ -19,10 +19,10 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 
-public class ProxyConnection implements Connection {
+class ProxyConnection implements Connection {
   private final Connection connection;
 
-  public ProxyConnection(Connection connection) {
+  ProxyConnection(Connection connection) {
     this.connection = connection;
   }
 
@@ -33,7 +33,7 @@ public class ProxyConnection implements Connection {
     }
   }
 
-  public void reallyClose() throws SQLException {
+  void reallyClose() throws SQLException {
     connection.close();
   }
 

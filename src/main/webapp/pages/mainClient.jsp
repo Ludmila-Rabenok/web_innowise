@@ -26,8 +26,8 @@
     <label for="procedures">Выберите услугу:</label><br>
     <select name="procedures" id="procedures" multiple>
         <option value="haircut">Стрижка</option>
-        <option value="nails">Обрезание когтей</option>
-        <option value="wash">Мытье</option>
+        <option value="nails">Маникюр</option>
+        <option value="wash">Мойка</option>
     </select><br><br>
     <!-- Время выполнения -->
     <label for="date">Дата выполнения:</label><br>

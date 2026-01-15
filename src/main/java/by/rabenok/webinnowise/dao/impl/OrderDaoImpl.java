@@ -1,10 +1,12 @@
 package by.rabenok.webinnowise.dao.impl;
 
+import by.rabenok.webinnowise.dao.ConstantSql;
 import by.rabenok.webinnowise.dao.OrderDao;
 import by.rabenok.webinnowise.exception.ConnectionException;
 import by.rabenok.webinnowise.exception.DaoException;
 import by.rabenok.webinnowise.model.Order;
 import by.rabenok.webinnowise.model.Procedure;
+import by.rabenok.webinnowise.model.Role;
 import by.rabenok.webinnowise.model.Status;
 import by.rabenok.webinnowise.model.User;
 import by.rabenok.webinnowise.pool.ConnectionPool;
@@ -17,7 +19,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class OrderDaoImpl implements OrderDao {
@@ -31,49 +36,47 @@ public class OrderDaoImpl implements OrderDao {
     return instance;
   }
 
-  public List<Order> findOrdersFromUser(User user) throws DaoException {
-    List<Order> orders = new ArrayList<>();
-    String sql = "SELECT id, user_id, lead_time, status, bill FROM orders WHERE user_id = ?";
+  public List<Order> findOrdersByUserName(String userName) throws DaoException {
+    Map<Integer, Order> map = new LinkedHashMap<>();
     try (Connection connection = ConnectionPool.getInstance().getConnection();
-         PreparedStatement statement = connection.prepareStatement(sql)) {
-      statement.setInt(1, user.getId());
-      try (ResultSet rs = statement.executeQuery()) {
-        while (rs.next()) {
-          Order order = new Order();
-          order.setId(rs.getInt("id"));
-          order.setLeadTime(rs.getTimestamp("lead_time").toLocalDateTime());
-          order.setStatus(Status.valueOf(rs.getString("status")));
-          order.setBill(rs.getBigDecimal("bill"));
-          order.setUser(user);
-          order.setProcedures(findProceduresByOrderId(connection, order.getId()));
-          orders.add(order);
+         PreparedStatement ps = connection.prepareStatement(ConstantSql.SELECT_ORDERS_BY_USERNAME)) {
+      ps.setString(1, userName);
+      try (ResultSet resultSet = ps.executeQuery()) {
+        while (resultSet.next()) {
+          int orderId = resultSet.getInt("order_id");
+          Order order = map.get(orderId);
+          if (order == null) {
+            order = buildOrder(resultSet);
+            map.put(orderId, order);
+          }
+          Procedure procedure = buildProcedure(resultSet);
+          if (procedure != null) {
+            order.getProcedures().add(procedure);
+          }
         }
       }
     } catch (ConnectionException | SQLException e) {
-      LOGGER.error("Error finding orders for user: {}", user.getName(), e);
+      LOGGER.error("Error finding orders for user {}", userName, e);
       throw new DaoException(e);
     }
-    return orders;
+    return new ArrayList<>(map.values());
   }
 
   @Override
-  public void save(Order order) throws DaoException {
-    String insertOrderSql = "INSERT INTO orders (user_id, lead_time, status, bill) VALUES (?, ?, ?, ?) RETURNING id";
-    String insertOrderProcedureSql = "INSERT INTO order_procedure (order_id, procedure_id) VALUES (?, ?)";
+  public void save(Order order, String[] procedures) throws DaoException {
     try (Connection connection = ConnectionPool.getInstance().getConnection();
-         PreparedStatement statement = connection.prepareStatement(insertOrderSql)) {
+         PreparedStatement statement = connection.prepareStatement(ConstantSql.INSERT_ORDERS)) {
       statement.setInt(1, order.getUser().getId());
       statement.setTimestamp(2, Timestamp.valueOf(order.getLeadTime()));
-      statement.setString(3, order.getStatus().name());
-      statement.setBigDecimal(4, order.getBill());
       try (ResultSet resultSet = statement.executeQuery()) {
         if (resultSet.next()) {
           int orderId = resultSet.getInt("id");
           order.setId(orderId);
-          try (PreparedStatement preparedStatement = connection.prepareStatement(insertOrderProcedureSql)) {
-            for (Procedure procedure : order.getProcedures()) {
+          try (PreparedStatement preparedStatement = connection.prepareStatement
+                  (ConstantSql.INSERT_ORDER_PROCEDURE)) {
+            for (String procedureName : procedures) {
               preparedStatement.setInt(1, orderId);
-              preparedStatement.setInt(2, procedure.getId());
+              preparedStatement.setString(2, procedureName);
               preparedStatement.addBatch();
             }
             preparedStatement.executeBatch();
@@ -87,30 +90,13 @@ public class OrderDaoImpl implements OrderDao {
   }
 
   @Override
-  public void update(Order order) throws DaoException {
-    String updateOrderSql = "UPDATE orders SET user_id = ?, lead_time = ?, status = ?, bill = ? WHERE id = ?";
-    String deleteProceduresSql = "DELETE FROM order_procedure WHERE order_id = ?";
-    String insertProceduresSql = "INSERT INTO order_procedure (order_id, procedure_id) VALUES (?, ?)";
+  public void updateStatusAndBill(Order order) throws DaoException {
     try (Connection connection = ConnectionPool.getInstance().getConnection()) {
-      try (PreparedStatement updateStmt = connection.prepareStatement(updateOrderSql)) {
-        updateStmt.setInt(1, order.getUser().getId());
-        updateStmt.setTimestamp(2, Timestamp.valueOf(order.getLeadTime()));
-        updateStmt.setString(3, order.getStatus().name());
-        updateStmt.setBigDecimal(4, order.getBill());
-        updateStmt.setInt(5, order.getId());
+      try (PreparedStatement updateStmt = connection.prepareStatement(ConstantSql.UPDATE_ORDER)) {
+        updateStmt.setString(1, order.getStatus().name());
+        updateStmt.setBigDecimal(2, order.getBill());
+        updateStmt.setInt(3, order.getId());
         updateStmt.executeUpdate();
-      }
-      try (PreparedStatement deleteStmt = connection.prepareStatement(deleteProceduresSql)) {
-        deleteStmt.setInt(1, order.getId());
-        deleteStmt.executeUpdate();
-      }
-      try (PreparedStatement insertStmt = connection.prepareStatement(insertProceduresSql)) {
-        for (Procedure procedure : order.getProcedures()) {
-          insertStmt.setInt(1, order.getId());
-          insertStmt.setInt(2, procedure.getId());
-          insertStmt.addBatch();
-        }
-        insertStmt.executeBatch();
       }
     } catch (ConnectionException | SQLException e) {
       LOGGER.error("Error updating order with id: {}", order.getId(), e);
@@ -120,46 +106,44 @@ public class OrderDaoImpl implements OrderDao {
 
   @Override
   public List<Order> findAll() throws DaoException {
-    List<Order> orders = new ArrayList<>();
-    String sql = "SELECT id, user_id, lead_time, status, bill FROM orders";
+    Map<Integer, Order> map = new HashMap<>();
     try (Connection connection = ConnectionPool.getInstance().getConnection();
-         PreparedStatement statement = connection.prepareStatement(sql);
+         PreparedStatement statement = connection.prepareStatement(ConstantSql.SELECT_ORDERS);
          ResultSet resultSet = statement.executeQuery()) {
       while (resultSet.next()) {
-        Order order = new Order();
-        order.setId(resultSet.getInt("id"));
-        order.setLeadTime(resultSet.getTimestamp("lead_time").toLocalDateTime());
-        order.setStatus(Status.valueOf(resultSet.getString("status")));
-        order.setBill(resultSet.getBigDecimal("bill"));
-        int userId = resultSet.getInt("user_id");
-        order.setUser(findUserById(connection, userId));
-        order.setProcedures(findProceduresByOrderId(connection, order.getId()));
-        orders.add(order);
+        int orderId = resultSet.getInt("order_id");
+        Order order = map.get(orderId);
+        if (order == null) {
+          order = buildOrder(resultSet);
+          map.put(orderId, order);
+        }
+        Procedure procedure = buildProcedure(resultSet);
+        if (procedure != null) {
+          order.getProcedures().add(procedure);
+        }
       }
     } catch (ConnectionException | SQLException e) {
       LOGGER.error("Error finding all orders", e);
       throw new DaoException(e);
     }
-    return orders;
+    return new ArrayList<>(map.values());
   }
 
   @Override
   public Optional<Order> findById(int id) throws DaoException {
     Order order = null;
-    String sql = "SELECT id, user_id, lead_time, status, bill FROM orders WHERE id = ?";
     try (Connection connection = ConnectionPool.getInstance().getConnection();
-         PreparedStatement statement = connection.prepareStatement(sql)) {
-      statement.setInt(1, id);
-      try (ResultSet rs = statement.executeQuery()) {
-        if (rs.next()) {
-          order = new Order();
-          order.setId(rs.getInt("id"));
-          order.setLeadTime(rs.getTimestamp("lead_time").toLocalDateTime());
-          order.setStatus(Status.valueOf(rs.getString("status")));
-          order.setBill(rs.getBigDecimal("bill"));
-          int userId = rs.getInt("user_id");
-          order.setUser(findUserById(connection, userId));
-          order.setProcedures(findProceduresByOrderId(connection, order.getId()));
+         PreparedStatement preparedStatement = connection.prepareStatement(ConstantSql.SELECT_ORDERS_BY_ID)) {
+      preparedStatement.setInt(1, id);
+      try (ResultSet resultSet = preparedStatement.executeQuery()) {
+        while (resultSet.next()) {
+          if (order == null) {
+            order = buildOrder(resultSet);
+          }
+          Procedure procedure = buildProcedure(resultSet);
+          if (procedure != null) {
+            order.getProcedures().add(procedure);
+          }
         }
       }
     } catch (ConnectionException | SQLException e) {
@@ -167,5 +151,36 @@ public class OrderDaoImpl implements OrderDao {
       throw new DaoException(e);
     }
     return Optional.ofNullable(order);
+  }
+
+  private Order buildOrder(ResultSet resultSet) throws SQLException {
+    Order order = new Order();
+    order.setId(resultSet.getInt("order_id"));
+    order.setLeadTime(resultSet.getTimestamp("order_lead_time").toLocalDateTime());
+    order.setStatus(Status.valueOf(resultSet.getString("order_status")));
+    order.setBill(resultSet.getBigDecimal("order_bill"));
+    order.setUser(buildUser(resultSet));
+    order.setProcedures(new ArrayList<>());
+    return order;
+  }
+
+  private User buildUser(ResultSet resultSet) throws SQLException {
+    User user = new User();
+    user.setId(resultSet.getInt("user_id"));
+    user.setName(resultSet.getString("user_name"));
+    user.setRole(Role.valueOf(resultSet.getString("user_role")));
+    return user;
+  }
+
+  private Procedure buildProcedure(ResultSet resultSet) throws SQLException {
+    int procedureId = resultSet.getInt("procedure_id");
+    if (resultSet.wasNull()) {
+      return null;
+    }
+    Procedure procedure = new Procedure();
+    procedure.setId(procedureId);
+    procedure.setName(resultSet.getString("procedure_name"));
+    procedure.setPrice(resultSet.getBigDecimal("procedure_price"));
+    return procedure;
   }
 }

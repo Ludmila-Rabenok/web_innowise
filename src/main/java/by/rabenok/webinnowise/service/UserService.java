@@ -7,8 +7,11 @@ import by.rabenok.webinnowise.model.User;
 import java.util.Optional;
 
 public interface UserService {
-  Optional<Role> authenticate(String login, String password) throws ServiceException;
+  boolean authenticate(String login, String password) throws ServiceException;
 
-  User getUserByLogin(String login) throws ServiceException;
+  Optional<Role> authorize(String login) throws ServiceException;
 
+  User findUserByName(String userName) throws ServiceException;
+
+  User findUserById(int id) throws ServiceException;
 }

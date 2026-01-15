@@ -1,5 +1,6 @@
 package by.rabenok.webinnowise.command;
 
+import by.rabenok.webinnowise.command.impl.AdminOrdersCommand;
 import by.rabenok.webinnowise.command.impl.ApproveOrderCommand;
 import by.rabenok.webinnowise.command.impl.ClientOrdersCommand;
 import by.rabenok.webinnowise.command.impl.DefaultCommand;
@@ -17,6 +18,7 @@ public enum CommandType {
   NEW_ORDER(new NewOrderCommand()),
   EVALUATION(new EvaluationProcedureCommand()),
   APPROVE_ORDER(new ApproveOrderCommand()),
+  ADMIN_ORDERS(new AdminOrdersCommand()),
   DEFAULT(new DefaultCommand());
 
   public static final Logger LOGGER = LogManager.getLogger();

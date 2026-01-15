@@ -19,13 +19,13 @@ public class NewOrderCommand implements Command {
     String[] procedures = request.getParameterValues(RequestParameterName.PROCEDURES);
     String date = request.getParameter(RequestParameterName.DATE);
     String time = request.getParameter(RequestParameterName.TIME);
-    String login = (String) request.getSession().getAttribute(RequestParameterName.LOGIN);
+    String userName = (String) request.getSession().getAttribute(RequestAttributeName.USER);
     String page;
     try {
-      OrderServiceImpl.getInstance().createOrder(login, procedures, date, time);
-      page = PagePath.CLIENT_ORDERS;
+      OrderServiceImpl.getInstance().createOrder(userName, procedures, date, time);
+      page = PagePath.SUCCESS_ORDERS;
     } catch (ServiceException e) {
-      LOGGER.error(e.getMessage(), e);
+      LOGGER.error(e.getMessage());
       request.setAttribute(RequestAttributeName.LOGIN_MSG, e.getCause());
       page = PagePath.ERROR_500;
     }

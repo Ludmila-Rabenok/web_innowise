@@ -25,7 +25,7 @@ public class EvaluationProcedureCommand implements Command {
       procedureService.evaluate(procedureId, ratingStr);
       page = PagePath.RATING_PROCEDURE;
     } catch (ServiceException e) {
-      LOGGER.error(e.getMessage(), e);
+      LOGGER.error(e.getMessage());
       request.setAttribute(RequestAttributeName.LOGIN_MSG, e.getCause());
       page = PagePath.ERROR_500;
     }

@@ -1,11 +1,15 @@
 package by.rabenok.webinnowise.dao.impl;
 
+import by.rabenok.webinnowise.dao.ConstantSql;
 import by.rabenok.webinnowise.dao.ProcedureDao;
+import by.rabenok.webinnowise.exception.ConnectionException;
 import by.rabenok.webinnowise.exception.DaoException;
-import by.rabenok.webinnowise.model.Procedure;
+import by.rabenok.webinnowise.model.Rating;
+import by.rabenok.webinnowise.pool.ConnectionPool;
 
-import java.math.BigDecimal;
-import java.util.Optional;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 public class ProcedureDaoImpl implements ProcedureDao {
   private static ProcedureDaoImpl instance = new ProcedureDaoImpl();
@@ -18,19 +22,14 @@ public class ProcedureDaoImpl implements ProcedureDao {
   }
 
   @Override
-  public Optional<Procedure> findProcedureByName(String name) throws DaoException {
-    //достаем из бд процедуру по имени
-    Procedure procedure = new Procedure("стрижка", new BigDecimal(55));//временно
-    return Optional.of(procedure);
-  }
-
-  @Override
-  public Optional<Procedure> findProcedureById(int id) throws DaoException {
-    Procedure procedure = new Procedure("", new BigDecimal(5));
-    return Optional.of(procedure);
-  }
-
-  @Override
-  public void update(Procedure procedure) throws DaoException {
+  public void addRating(int procedureId, Rating rating) throws DaoException {
+    try (Connection connection = ConnectionPool.getInstance().getConnection();
+         PreparedStatement ps = connection.prepareStatement(ConstantSql.INSERT_PROCEDURE_RATING)) {
+      ps.setInt(1, procedureId);
+      ps.setString(2, rating.name());
+      ps.executeUpdate();
+    } catch (SQLException | ConnectionException e) {
+      throw new DaoException(e);
+    }
   }
 }

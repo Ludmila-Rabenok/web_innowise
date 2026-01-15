@@ -1,7 +1,7 @@
 package by.rabenok.webinnowise.pool;
 
 import by.rabenok.webinnowise.exception.ConnectionException;
-import by.rabenok.webinnowise.util.DBConfig;
+import by.rabenok.webinnowise.util.DbConfig;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -17,17 +17,17 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class ConnectionPool {
   public static final Logger LOGGER = LogManager.getLogger();
-  private static ConnectionPool instance;
   private static final int CAPACITY = 8;
-  private static final Lock lock = new ReentrantLock();
+  private static ConnectionPool instance;
+  private static Lock lock = new ReentrantLock();
   private BlockingQueue<ProxyConnection> free = new ArrayBlockingQueue<>(CAPACITY);
   private BlockingQueue<ProxyConnection> used = new ArrayBlockingQueue<>(CAPACITY);
 
   static {
     try {
-      Class.forName(DBConfig.getDriver());
+      Class.forName(DbConfig.getDriver());
     } catch (ClassNotFoundException e) {
-      LOGGER.error("Failed to load JDBC driver", e);
+      LOGGER.fatal("Failed to load JDBC driver", e);
       throw new ExceptionInInitializerError(e);
     }
   }
@@ -35,9 +35,9 @@ public class ConnectionPool {
   private ConnectionPool() {
     for (int i = 0; i < CAPACITY; i++) {
       ProxyConnection connection = createConnection(
-              DBConfig.getUrl(),
-              DBConfig.getUsername(),
-              DBConfig.getPassword());
+              DbConfig.getUrl(),
+              DbConfig.getUsername(),
+              DbConfig.getPassword());
       free.add(connection);
     }
   }
@@ -65,9 +65,9 @@ public class ConnectionPool {
         LOGGER.warn("Connection invalid, recreating...");
         connection.reallyClose();
         connection = createConnection(
-                DBConfig.getUrl(),
-                DBConfig.getUsername(),
-                DBConfig.getPassword());
+                DbConfig.getUrl(),
+                DbConfig.getUsername(),
+                DbConfig.getPassword());
       }
       used.put(connection);
     } catch (InterruptedException e) {
@@ -95,9 +95,9 @@ public class ConnectionPool {
           LOGGER.warn("Connection {} invalid on release, recreating...", connection);
           ((ProxyConnection) connection).reallyClose();
           free.put(createConnection(
-                  DBConfig.getUrl(),
-                  DBConfig.getUsername(),
-                  DBConfig.getPassword()));
+                  DbConfig.getUrl(),
+                  DbConfig.getUsername(),
+                  DbConfig.getPassword()));
         }
       }
     } catch (InterruptedException e) {
@@ -120,10 +120,8 @@ public class ConnectionPool {
           }
         } catch (InterruptedException e) {
           LOGGER.error("Thread interrupted while destroying pool", e);
-          Thread.currentThread().interrupt();
         } catch (SQLException e) {
           LOGGER.error("Error closing connection during pool destroy", e);
-          throw new ConnectionException(e);
         }
       }
     }
@@ -132,7 +130,6 @@ public class ConnectionPool {
       Driver driver = drivers.nextElement();
       try {
         DriverManager.deregisterDriver(driver);
-        LOGGER.info("Driver {} deregistered", driver);
       } catch (SQLException e) {
         LOGGER.error("Failed to deregister driver {}", driver, e);
       }

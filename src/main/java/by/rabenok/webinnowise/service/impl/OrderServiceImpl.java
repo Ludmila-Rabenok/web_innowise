@@ -1,10 +1,8 @@
 package by.rabenok.webinnowise.service.impl;
 
 import by.rabenok.webinnowise.dao.OrderDao;
-import by.rabenok.webinnowise.dao.ProcedureDao;
 import by.rabenok.webinnowise.dao.UserDao;
 import by.rabenok.webinnowise.dao.impl.OrderDaoImpl;
-import by.rabenok.webinnowise.dao.impl.ProcedureDaoImpl;
 import by.rabenok.webinnowise.dao.impl.UserDaoImpl;
 import by.rabenok.webinnowise.exception.DaoException;
 import by.rabenok.webinnowise.exception.ServiceException;
@@ -20,7 +18,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -37,8 +34,8 @@ public class OrderServiceImpl implements OrderService {
   }
 
   @Override
-  public void createOrder(String login, String[] procedures, String date, String time) throws ServiceException {
-    if (login == null || login.isEmpty()) {
+  public void createOrder(String userName, String[] procedures, String date, String time) throws ServiceException {
+    if (userName == null || userName.isEmpty()) {
       LOGGER.error("Login cannot be empty");
       throw new ServiceException("Login cannot be empty");
     }
@@ -50,27 +47,15 @@ public class OrderServiceImpl implements OrderService {
     UserDao userDao = UserDaoImpl.getInstance();
     User user;
     try {
-      user = userDao.findUserByLogin(login)
+      user = userDao.findUserByName(userName)
               .orElseThrow(() -> new ServiceException("User not found"));
       order.setUser(user);
       LocalDate localDate = LocalDate.parse(date);
       LocalTime localTime = LocalTime.parse(time);
       LocalDateTime leadTime = LocalDateTime.of(localDate, localTime);
       order.setLeadTime(leadTime);
-      List<Procedure> procedureList = new ArrayList<>();
-      ProcedureDao procedureDao = ProcedureDaoImpl.getInstance();
-      for (String nameProc : procedures) {
-        Optional<Procedure> procedureOptional = procedureDao.findProcedureByName(nameProc);
-        procedureOptional.ifPresent(procedureList::add);
-      }
-      if (procedureList.isEmpty()) {
-        LOGGER.error("No valid procedures found");
-        throw new ServiceException("No valid procedures found");
-      }
-      order.setProcedures(procedureList);
-      order.setStatus(Status.MODERATION);
       OrderDao orderDao = OrderDaoImpl.getInstance();
-      orderDao.save(order);
+      orderDao.save(order, procedures);
     } catch (DaoException e) {
       LOGGER.error("Error creating order", e);
       throw new ServiceException(e);
@@ -78,31 +63,26 @@ public class OrderServiceImpl implements OrderService {
   }
 
   @Override
-  public List<Order> getOrdersFromUser(User user) throws ServiceException {
-    if (user == null || user.getId() <= 0) {
-      LOGGER.error("Invalid user");
-      throw new ServiceException("Invalid user");
-    }
+  public List<Order> findOrdersByUserName(String userName) throws ServiceException {
     OrderDao orderDao = OrderDaoImpl.getInstance();
     List<Order> orders;
     try {
-      orders = orderDao.findOrdersFromUser(user);
+      orders = orderDao.findOrdersByUserName(userName);
       if (orders == null) {
         orders = Collections.emptyList();
       }
     } catch (DaoException e) {
-      LOGGER.error("Error fetching orders for user id={}", user.getId(), e);
+      LOGGER.error("Error fetching orders for user {}", userName, e);
       throw new ServiceException(e);
     }
     return orders;
   }
 
   @Override
-  public List<Order> getAll() throws ServiceException {
-    OrderDao orderDao = OrderDaoImpl.getInstance();
+  public List<Order> findAll() throws ServiceException {
     List<Order> orders;
     try {
-      orders = orderDao.findAll();
+      orders = OrderDaoImpl.getInstance().findAll();
       if (orders == null) {
         LOGGER.warn("DAO returned null for getAll(), converting to empty list");
         return Collections.emptyList();
@@ -115,7 +95,7 @@ public class OrderServiceImpl implements OrderService {
   }
 
   @Override
-  public Order getById(int id) throws ServiceException {
+  public Order findById(int id) throws ServiceException {
     if (id <= 0) {
       LOGGER.error("Invalid order id: " + id);
       throw new ServiceException("Invalid order id: " + id);
@@ -133,7 +113,8 @@ public class OrderServiceImpl implements OrderService {
   }
 
   @Override
-  public void approve(Order order) throws ServiceException {//утвердить
+  public void approve(int orderId) throws ServiceException {
+    Order order = findById(orderId);
     if (order.getStatus() != Status.MODERATION) {
       LOGGER.warn("Order id={} cannot be approved. Current status={}", order.getId(), order.getStatus());
       throw new ServiceException("Order cannot be approved in status " + order.getStatus());
@@ -143,7 +124,7 @@ public class OrderServiceImpl implements OrderService {
     order.setBill(bill);
     OrderDao orderDao = OrderDaoImpl.getInstance();
     try {
-      orderDao.update(order);
+      orderDao.updateStatusAndBill(order);
     } catch (DaoException e) {
       LOGGER.error("Error approving order id={}", order.getId(), e);
       throw new ServiceException(e);

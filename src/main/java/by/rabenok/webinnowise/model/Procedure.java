@@ -1,20 +1,16 @@
 package by.rabenok.webinnowise.model;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 public class Procedure {
   private int id;
-  private final String name;
+  private String name;
   private BigDecimal price;
   private List<Rating> ratings;
 
-  public Procedure(String name, BigDecimal price) {
-    this.name = name;
-    this.price = price;
-    ratings = new ArrayList<>();
+  public Procedure() {
   }
 
   public int getId() {
@@ -23,6 +19,10 @@ public class Procedure {
 
   public void setId(int id) {
     this.id = id;
+  }
+
+  public void setName(String name) {
+    this.name = name;
   }
 
   public String getName() {

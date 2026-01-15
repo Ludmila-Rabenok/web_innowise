@@ -10,7 +10,7 @@ public class Order {
   private User user;
   private List<Procedure> procedures;
   private LocalDateTime leadTime;
-  private Status status;//по умолчанию на модерации
+  private Status status;
   private BigDecimal bill;
 
   public Order() {
@@ -22,14 +22,6 @@ public class Order {
 
   public void setId(int id) {
     this.id = id;
-  }
-
-  public User getUser() {
-    return user;
-  }
-
-  public void setUser(User user) {
-    this.user = user;
   }
 
   public List<Procedure> getProcedures() {
@@ -64,23 +56,33 @@ public class Order {
     this.status = status;
   }
 
+  public User getUser() {
+    return user;
+  }
+
+  public void setUser(User user) {
+    this.user = user;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     Order order = (Order) o;
-    return Objects.equals(procedures, order.procedures) && Objects.equals(leadTime, order.leadTime) && status == order.status && Objects.equals(bill, order.bill);
+    return id == order.id && Objects.equals(user, order.user) && Objects.equals(procedures, order.procedures) && Objects.equals(leadTime, order.leadTime) && status == order.status && Objects.equals(bill, order.bill);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(procedures, leadTime, status, bill);
+    return Objects.hash(id, user, procedures, leadTime, status, bill);
   }
 
   @Override
   public String toString() {
     final StringBuilder sb = new StringBuilder("Order{");
-    sb.append("procedures=").append(procedures);
+    sb.append("id=").append(id);
+    sb.append(", user=").append(user);
+    sb.append(", procedures=").append(procedures);
     sb.append(", leadTime=").append(leadTime);
     sb.append(", status=").append(status);
     sb.append(", bill=").append(bill);

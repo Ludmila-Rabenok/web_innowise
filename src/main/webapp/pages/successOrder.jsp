@@ -1,14 +1,14 @@
 <%--
   Created by IntelliJ IDEA.
   User: Mila
-  Date: 25.12.2025
-  Time: 20:18
+  Date: 15.01.2026
+  Time: 15:53
   To change this template use File | Settings | File Templates.
 --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <!DOCTYPE html>
 <html>
-<head><title>Спасибо за оценку</title>
+<head><title>Заявка зарегистрирована</title>
     <style> body {
         font-family: Arial, sans-serif;
         margin: 40px;
@@ -30,15 +30,20 @@
 
     .btn:hover {
         background: #0056b3;
+    }
+
+    form {
+        display: inline;
     } </style>
 </head>
-<body><h2>Спасибо за вашу оценку!</h2>
-<p>Ваш отзыв учтён. Вы можете продолжить работу:</p>
-<!-- Кнопка "Вернуться к списку заявок" -->
-<a href="controller?command=client_orders" class="btn">Вернуться к заявкам</a>
+<body><h2>Ваша заявка успешно зарегистрирована!</h2>
+<p>Вы можете продолжить работу:</p>
+<!-- Кнопка "Перейти к списку заявок" -->
+<a href="controller?command=client_orders" class="btn">Перейти к заявкам</a>
 <!-- Кнопка "Выйти из системы" -->
-<form action="controller" method="post" style="display:inline;">
+<form action="controller" method="post">
     <input type="hidden" name="command" value="logout"/>
-    <input type="submit" value="Выйти из системы" class="btn"/></form>
+    <input type="submit" value="Выйти из системы" class="btn"/>
+</form>
 </body>
 </html>
