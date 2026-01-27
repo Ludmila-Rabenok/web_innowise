@@ -2,6 +2,7 @@ package by.rabenok.webinnowise.controller;
 
 import by.rabenok.webinnowise.command.Command;
 import by.rabenok.webinnowise.command.CommandType;
+import by.rabenok.webinnowise.exception.CommandException;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -28,7 +29,17 @@ public class Controller extends HttpServlet {
     response.setContentType("text/html");
     String commandStr = request.getParameter(RequestParameterName.COMMAND);
     Command command = CommandType.define(commandStr);
-    String page = command.execute(request);
-    request.getRequestDispatcher(page).forward(request, response);
+    try {
+      String page = command.execute(request);
+      if (page.startsWith("redirect:")) {
+        String redirectUrl = page.substring("redirect:".length());
+        response.sendRedirect(redirectUrl);
+      } else {
+        request.getRequestDispatcher(page).forward(request, response);
+      }
+    } catch (CommandException e) {
+      request.setAttribute(RequestAttributeName.ERROR_MSG, e.getCause());
+      request.getRequestDispatcher(PagePath.ERROR_500).forward(request, response);
+    }
   }
 }

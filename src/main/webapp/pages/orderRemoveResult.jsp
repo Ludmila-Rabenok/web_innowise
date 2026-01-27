@@ -1,25 +1,18 @@
 <%--
   Created by IntelliJ IDEA.
   User: Mila
-  Date: 22.12.2025
-  Time: 12:50
+  Date: 23.01.2026
+  Time: 19:45
   To change this template use File | Settings | File Templates.
 --%>
-<%@ page isErrorPage="true" contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<!DOCTYPE html>
 <html>
-<head><
-    title>500</title>
+<head>
+    <title>Удаление заявки</title>
     <style> body {
         font-family: Arial, sans-serif;
         margin: 40px;
-        text-align: center;
-    }
-
-    h1 {
-        font-size: 48px;
-        color: #b30000;
     }
 
     h2 {
@@ -29,7 +22,7 @@
     .btn {
         display: inline-block;
         padding: 10px 20px;
-        margin-top: 20px;
+        margin-top: 15px;
         background: #007bff;
         color: #fff;
         text-decoration: none;
@@ -41,20 +34,13 @@
 
     .btn:hover {
         background: #0056b3;
-    }
-
-    .error-msg {
-        margin-top: 20px;
-        color: #b30000;
-        font-size: 18px;
     } </style>
 </head>
 <body>
-<h1>500</h1>
-<h2>Внутренняя ошибка сервера</h2>
-<div class="error-msg">
-    <c:out value="${error_msg}"/>
-</div>
-<a href="index.jsp" class="btn">Вернуться на главную</a>
+<h2><c:out value="${msg}"/></h2>
+<form action="controller" method="get">
+    <input type="hidden" name="command" value="client_orders"/>
+    <button type="submit" class="btn">Вернуться ко всем заявкам</button>
+</form>
 </body>
 </html>

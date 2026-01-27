@@ -21,15 +21,22 @@
     .btn {
         display: inline-block;
         padding: 10px 20px;
-        margin: 10px;
+        margin: 10px 10px 0 0;
         background: #007bff;
         color: #fff;
         text-decoration: none;
         border-radius: 4px;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
     }
 
     .btn:hover {
         background: #0056b3;
+    }
+
+    form {
+        display: inline;
     } </style>
 </head>
 <body><h2>Спасибо за вашу оценку!</h2>
@@ -39,6 +46,7 @@
 <!-- Кнопка "Выйти из системы" -->
 <form action="controller" method="post" style="display:inline;">
     <input type="hidden" name="command" value="logout"/>
-    <input type="submit" value="Выйти из системы" class="btn"/></form>
+    <button type="submit" class="btn">Выйти из системы</button>
+</form>
 </body>
 </html>

@@ -28,7 +28,7 @@ public class UserDaoImpl implements UserDao {
   }
 
   @Override
-  public String authenticate(String login, String password) throws DaoException {
+  public String authenticate(String login) throws DaoException {
     String passFromDB = null;
     try (Connection connection = ConnectionPool.getInstance().getConnection();
          PreparedStatement statement = connection.prepareStatement(ConstantSql.SELECT_PASSWORD_BY_USERNAME)) {

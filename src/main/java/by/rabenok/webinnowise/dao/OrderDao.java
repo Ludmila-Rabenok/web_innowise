@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface OrderDao {
-  List<Order> findOrdersByUserName(String uerName) throws DaoException;
+  List<Order> findOrdersByUserName(String userName) throws DaoException;
 
   void save(Order order, String[] procedures) throws DaoException;
 
@@ -16,4 +16,6 @@ public interface OrderDao {
   List<Order> findAll() throws DaoException;
 
   Optional<Order> findById(int id) throws DaoException;
+
+  boolean remove(int id) throws DaoException;
 }

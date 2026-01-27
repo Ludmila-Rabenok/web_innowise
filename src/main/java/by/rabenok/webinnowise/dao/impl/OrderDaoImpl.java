@@ -153,6 +153,21 @@ public class OrderDaoImpl implements OrderDao {
     return Optional.ofNullable(order);
   }
 
+  @Override
+  public boolean remove(int id) throws DaoException {
+    boolean result;
+    try (Connection connection = ConnectionPool.getInstance().getConnection();
+         PreparedStatement preparedStatement = connection.prepareStatement(ConstantSql.DELETE_ORDER_BY_ID)) {
+      preparedStatement.setInt(1, id);
+      int executeUpdate = preparedStatement.executeUpdate();
+      result = executeUpdate == 1;
+    } catch (ConnectionException | SQLException e) {
+      LOGGER.error("Error removed order by id: {}", id, e);
+      throw new DaoException(e);
+    }
+    return result;
+  }
+
   private Order buildOrder(ResultSet resultSet) throws SQLException {
     Order order = new Order();
     order.setId(resultSet.getInt("order_id"));
@@ -181,6 +196,13 @@ public class OrderDaoImpl implements OrderDao {
     procedure.setId(procedureId);
     procedure.setName(resultSet.getString("procedure_name"));
     procedure.setPrice(resultSet.getBigDecimal("procedure_price"));
+    double avg = resultSet.getDouble("rating_average");
+    if (resultSet.wasNull()) {
+      procedure.setRatingAverage(null);
+    } else {
+      procedure.setRatingAverage(avg);
+    }
+    procedure.setRatingCount(resultSet.getInt("rating_count"));
     return procedure;
   }
 }

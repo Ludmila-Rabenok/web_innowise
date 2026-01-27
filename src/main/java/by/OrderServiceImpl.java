@@ -1,4 +1,4 @@
-package by.rabenok.webinnowise.service.impl;
+package by;
 
 import by.rabenok.webinnowise.dao.OrderDao;
 import by.rabenok.webinnowise.dao.UserDao;
@@ -35,14 +35,6 @@ public class OrderServiceImpl implements OrderService {
 
   @Override
   public void createOrder(String userName, String[] procedures, String date, String time) throws ServiceException {
-    if (userName == null || userName.isEmpty()) {
-      LOGGER.error("Login cannot be empty");
-      throw new ServiceException("Login cannot be empty");
-    }
-    if (procedures == null || procedures.length == 0) {
-      LOGGER.error("At least one procedure required");
-      throw new ServiceException("At least one procedure required");
-    }
     Order order = new Order();
     UserDao userDao = UserDaoImpl.getInstance();
     User user;
@@ -96,10 +88,6 @@ public class OrderServiceImpl implements OrderService {
 
   @Override
   public Order findById(int id) throws ServiceException {
-    if (id <= 0) {
-      LOGGER.error("Invalid order id: " + id);
-      throw new ServiceException("Invalid order id: " + id);
-    }
     OrderDao orderDao = OrderDaoImpl.getInstance();
     Order order;
     try {
@@ -113,8 +101,25 @@ public class OrderServiceImpl implements OrderService {
   }
 
   @Override
-  public void approve(int orderId) throws ServiceException {
-    Order order = findById(orderId);
+  public boolean remove(int id) throws ServiceException {
+    boolean removed;
+    try {
+      removed = OrderDaoImpl.getInstance().remove(id);
+      if (removed) {
+        LOGGER.info("Order with id={} successfully removed", id);
+      } else {
+        LOGGER.warn("Order with id={} not found, nothing removed", id);
+      }
+    } catch (DaoException e) {
+      LOGGER.error("Error removed order with id={}", id, e);
+      throw new ServiceException(e);
+    }
+    return removed;
+  }
+
+  @Override
+  public void approve(int id) throws ServiceException {
+    Order order = findById(id);
     if (order.getStatus() != Status.MODERATION) {
       LOGGER.warn("Order id={} cannot be approved. Current status={}", order.getId(), order.getStatus());
       throw new ServiceException("Order cannot be approved in status " + order.getStatus());
@@ -126,7 +131,26 @@ public class OrderServiceImpl implements OrderService {
     try {
       orderDao.updateStatusAndBill(order);
     } catch (DaoException e) {
-      LOGGER.error("Error approving order id={}", order.getId(), e);
+      LOGGER.error("Error approving order id={}", id, e);
+      throw new ServiceException(e);
+    }
+  }
+
+  @Override
+  public void reject(int id) throws ServiceException {
+    Order order = findById(id);
+    if (order.getStatus() != Status.MODERATION) {
+      LOGGER.warn("Order id={} cannot be rejected. Current status={}", id, order.getStatus());
+      throw new ServiceException("Order cannot be rejected in status " + order.getStatus());
+    }
+    order.setStatus(Status.REJECTED);
+    BigDecimal bill = calculateBill(order);
+    order.setBill(bill);
+    OrderDao orderDao = OrderDaoImpl.getInstance();
+    try {
+      orderDao.updateStatusAndBill(order);
+    } catch (DaoException e) {
+      LOGGER.error("Error rejected order id={}", id, e);
       throw new ServiceException(e);
     }
   }

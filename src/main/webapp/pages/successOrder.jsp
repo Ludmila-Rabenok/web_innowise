@@ -5,7 +5,7 @@
   Time: 15:53
   To change this template use File | Settings | File Templates.
 --%>
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <!DOCTYPE html>
 <html>
 <head><title>Заявка зарегистрирована</title>
@@ -21,11 +21,14 @@
     .btn {
         display: inline-block;
         padding: 10px 20px;
-        margin: 10px;
+        margin: 10px 10px 0 0;
         background: #007bff;
         color: #fff;
         text-decoration: none;
         border-radius: 4px;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
     }
 
     .btn:hover {
@@ -37,13 +40,13 @@
     } </style>
 </head>
 <body><h2>Ваша заявка успешно зарегистрирована!</h2>
-<p>Вы можете продолжить работу:</p>
+<p>Вы можете продолжить:</p>
 <!-- Кнопка "Перейти к списку заявок" -->
 <a href="controller?command=client_orders" class="btn">Перейти к заявкам</a>
 <!-- Кнопка "Выйти из системы" -->
 <form action="controller" method="post">
     <input type="hidden" name="command" value="logout"/>
-    <input type="submit" value="Выйти из системы" class="btn"/>
+    <button type="submit" class="btn">Выйти из системы</button>
 </form>
 </body>
 </html>

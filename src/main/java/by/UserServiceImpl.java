@@ -1,4 +1,4 @@
-package by.rabenok.webinnowise.service.impl;
+package by;
 
 import by.rabenok.webinnowise.dao.UserDao;
 import by.rabenok.webinnowise.dao.impl.UserDaoImpl;
@@ -26,21 +26,14 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public boolean authenticate(String login, String password) throws ServiceException {
-    if (login == null || login.isEmpty() || password == null || password.isEmpty()) {
-      LOGGER.error("Login and password cannot be empty");
-      throw new ServiceException("Login and password cannot be empty");
-    }
     UserDao userDao = UserDaoImpl.getInstance();
     String passFromDb;
-    String hashPassword = PasswordBCrypt.hashPassword(password);
     try {
-      passFromDb = userDao.authenticate(login, hashPassword);
-      if (PasswordBCrypt.verifyPassword(password, passFromDb)) {
-        return true;
-      } else {
-        LOGGER.error("Password incorrect");
-        throw new ServiceException("Password incorrect");
+      passFromDb = userDao.authenticate(login);
+      if (passFromDb == null) {
+        return false;
       }
+      return PasswordBCrypt.verifyPassword(password, passFromDb);
     } catch (DaoException e) {
       LOGGER.error("Error during authentication for user {}", login, e);
       throw new ServiceException(e);
@@ -49,9 +42,6 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public Optional<Role> authorize(String login) throws ServiceException {
-    if (login == null || login.isEmpty()) {
-      throw new ServiceException("Login cannot be empty");
-    }
     Optional<Role> optionalRole;
     try {
       optionalRole = UserDaoImpl.getInstance().authorize(login);
@@ -64,10 +54,6 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public User findUserByName(String userName) throws ServiceException {
-    if (userName == null || userName.isEmpty()) {
-      LOGGER.error("Login cannot be empty");
-      throw new ServiceException("Login cannot be empty");
-    }
     User user;
     try {
       Optional<User> optionalUser = UserDaoImpl.getInstance().findUserByName(userName);
@@ -81,10 +67,6 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public User findUserById(int id) throws ServiceException {
-    if (id <= 0) {
-      LOGGER.error("ID cannot be less than zero");
-      throw new ServiceException("ID cannot be less than zero");
-    }
     User user;
     try {
       Optional<User> optionalUser = UserDaoImpl.getInstance().findUserById(id);

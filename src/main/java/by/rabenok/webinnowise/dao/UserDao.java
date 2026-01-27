@@ -7,7 +7,7 @@ import by.rabenok.webinnowise.model.User;
 import java.util.Optional;
 
 public interface UserDao {
-  String authenticate(String login, String password) throws DaoException;
+  String authenticate(String login) throws DaoException;
 
   Optional<Role> authorize(String login) throws DaoException;
 

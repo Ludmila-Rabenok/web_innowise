@@ -14,5 +14,9 @@ public interface OrderService {
 
   Order findById(int id) throws ServiceException;
 
-  void approve(int orderId) throws ServiceException;
+  boolean remove(int id) throws ServiceException;
+
+  void approve(int id) throws ServiceException;
+
+  void reject(int id) throws ServiceException;
 }

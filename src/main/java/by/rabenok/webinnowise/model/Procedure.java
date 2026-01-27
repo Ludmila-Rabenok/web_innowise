@@ -1,14 +1,14 @@
 package by.rabenok.webinnowise.model;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.Objects;
 
 public class Procedure {
   private int id;
   private String name;
   private BigDecimal price;
-  private List<Rating> ratings;
+  private Double ratingAverage;
+  private int ratingCount;
 
   public Procedure() {
   }
@@ -37,16 +37,20 @@ public class Procedure {
     this.price = price;
   }
 
-  public List<Rating> getRatings() {
-    return ratings;
+  public Double getRatingAverage() {
+    return ratingAverage;
   }
 
-  public void setRatings(List<Rating> ratings) {
-    this.ratings = ratings;
+  public void setRatingAverage(Double ratingAverage) {
+    this.ratingAverage = ratingAverage;
   }
 
-  public void addRating(Rating rating) {
-    ratings.add(rating);
+  public int getRatingCount() {
+    return ratingCount;
+  }
+
+  public void setRatingCount(int ratingCount) {
+    this.ratingCount = ratingCount;
   }
 
   @Override
@@ -54,20 +58,22 @@ public class Procedure {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     Procedure procedure = (Procedure) o;
-    return Objects.equals(name, procedure.name) && Objects.equals(price, procedure.price) && Objects.equals(ratings, procedure.ratings);
+    return id == procedure.id && Double.compare(procedure.ratingAverage, ratingAverage) == 0 && ratingCount == procedure.ratingCount && Objects.equals(name, procedure.name) && Objects.equals(price, procedure.price);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, price, ratings);
+    return Objects.hash(id, name, price, ratingAverage, ratingCount);
   }
 
   @Override
   public String toString() {
     final StringBuilder sb = new StringBuilder("Procedure{");
-    sb.append("name='").append(name).append('\'');
+    sb.append("id=").append(id);
+    sb.append(", name='").append(name).append('\'');
     sb.append(", price=").append(price);
-    sb.append(", ratings=").append(ratings);
+    sb.append(", ratingAverage=").append(ratingAverage);
+    sb.append(", ratingCount=").append(ratingCount);
     sb.append('}');
     return sb.toString();
   }

@@ -5,34 +5,38 @@
   Time: 22:43
   To change this template use File | Settings | File Templates.
 --%>
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html>
-<head><title>Администратор — панель управления</title>
-    <style> body {
-        font-family: Arial, sans-serif;
-        margin: 40px;
-    }
+<head>
+    <title>Администратор — панель управления</title>
+        <style> body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+        }
 
-    h2 {
-        color: #2e6da4;
-    }
+        h2 {
+            color: #2e6da4;
+        }
 
-    .btn {
-        display: inline-block;
-        padding: 10px 20px;
-        margin-top: 15px;
-        background: #007bff;
-        color: #fff;
-        text-decoration: none;
-        border-radius: 4px;
-    }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            margin-top: 15px;
+            background: #007bff;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 4px;
+        }
 
-    .btn:hover {
-        background: #0056b3;
-    } </style>
+        .btn:hover {
+            background: #0056b3;
+        } </style>
 </head>
-<body><h2>Добро пожаловать, ${user}!</h2>
-<p>Вы находитесь в панели администратора. Вы можете перейти к управлению заказами:</p> <a
-        href="controller?command=admin_orders" class="btn">Перейти к заказам</a></body>
+<body>
+<h2><c:out value="${user}"/>!</h2>
+<p>Вы находитесь в панели администратора. Вы можете перейти к управлению заявками:</p>
+<a href="controller?command=admin_orders" class="btn">Перейти к заявкам</a>
+</body>
 </html>

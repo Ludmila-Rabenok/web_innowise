@@ -3,21 +3,19 @@ package by.rabenok.webinnowise.command.impl;
 import by.rabenok.webinnowise.command.Command;
 import by.rabenok.webinnowise.controller.PagePath;
 import by.rabenok.webinnowise.controller.RequestAttributeName;
+import by.rabenok.webinnowise.exception.CommandException;
 import by.rabenok.webinnowise.exception.ServiceException;
 import by.rabenok.webinnowise.model.Order;
 import by.rabenok.webinnowise.service.OrderService;
-import by.rabenok.webinnowise.service.impl.OrderServiceImpl;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import by.OrderServiceImpl;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 public class ClientOrdersCommand implements Command {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   @Override
-  public String execute(HttpServletRequest request) {
+  public String execute(HttpServletRequest request) throws CommandException {
     String login = request.getSession().getAttribute(RequestAttributeName.USER).toString();
     OrderService orderService = OrderServiceImpl.getInstance();
     String page;
@@ -27,8 +25,7 @@ public class ClientOrdersCommand implements Command {
       page = PagePath.CLIENT_ORDERS;
     } catch (ServiceException e) {
       LOGGER.error(e.getMessage());
-      request.setAttribute(RequestAttributeName.LOGIN_MSG, e.getCause());
-      page = PagePath.ERROR_500;
+      throw new CommandException(e);
     }
     return page;
   }
