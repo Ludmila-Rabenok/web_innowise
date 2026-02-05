@@ -6,10 +6,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.sql.Connection;
-import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Enumeration;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.locks.Lock;
@@ -40,6 +38,10 @@ public class ConnectionPool {
               DbConfig.getPassword());
       free.add(connection);
     }
+  }
+
+  public int getFreeCount() {
+    return free.size();
   }
 
   public static ConnectionPool getInstance() {
@@ -123,15 +125,6 @@ public class ConnectionPool {
         } catch (SQLException e) {
           LOGGER.error("Error closing connection during pool destroy", e);
         }
-      }
-    }
-    Enumeration<Driver> drivers = DriverManager.getDrivers();
-    while (drivers.hasMoreElements()) {
-      Driver driver = drivers.nextElement();
-      try {
-        DriverManager.deregisterDriver(driver);
-      } catch (SQLException e) {
-        LOGGER.error("Failed to deregister driver {}", driver, e);
       }
     }
   }

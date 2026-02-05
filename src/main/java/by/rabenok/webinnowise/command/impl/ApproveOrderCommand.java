@@ -7,7 +7,7 @@ import by.rabenok.webinnowise.controller.RequestParameterName;
 import by.rabenok.webinnowise.exception.CommandException;
 import by.rabenok.webinnowise.exception.ServiceException;
 import by.rabenok.webinnowise.model.Role;
-import by.OrderServiceImpl;
+import by.rabenok.webinnowise.service.impl.OrderServiceImpl;
 
 import javax.servlet.http.HttpServletRequest;
 

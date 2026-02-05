@@ -1,11 +1,9 @@
-package by;
+package by.rabenok.webinnowise.service.impl;
 
-import by.rabenok.webinnowise.dao.UserDao;
 import by.rabenok.webinnowise.dao.impl.UserDaoImpl;
 import by.rabenok.webinnowise.exception.DaoException;
 import by.rabenok.webinnowise.exception.ServiceException;
 import by.rabenok.webinnowise.model.Role;
-import by.rabenok.webinnowise.model.User;
 import by.rabenok.webinnowise.service.UserService;
 import by.rabenok.webinnowise.util.PasswordBCrypt;
 import org.apache.logging.log4j.LogManager;
@@ -26,10 +24,8 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public boolean authenticate(String login, String password) throws ServiceException {
-    UserDao userDao = UserDaoImpl.getInstance();
-    String passFromDb;
     try {
-      passFromDb = userDao.authenticate(login);
+      String passFromDb = UserDaoImpl.getInstance().authenticate(login);
       if (passFromDb == null) {
         return false;
       }
@@ -50,31 +46,5 @@ public class UserServiceImpl implements UserService {
       throw new ServiceException(e);
     }
     return optionalRole;
-  }
-
-  @Override
-  public User findUserByName(String userName) throws ServiceException {
-    User user;
-    try {
-      Optional<User> optionalUser = UserDaoImpl.getInstance().findUserByName(userName);
-      user = optionalUser.orElseThrow(() -> new ServiceException("User not found."));
-    } catch (DaoException e) {
-      LOGGER.error("Error fetching user with name ={}", userName, e);
-      throw new ServiceException(e);
-    }
-    return user;
-  }
-
-  @Override
-  public User findUserById(int id) throws ServiceException {
-    User user;
-    try {
-      Optional<User> optionalUser = UserDaoImpl.getInstance().findUserById(id);
-      user = optionalUser.orElseThrow(() -> new ServiceException("User not found."));
-    } catch (DaoException e) {
-      LOGGER.error("Error fetching user with id={}", id, e);
-      throw new ServiceException(e);
-    }
-    return user;
   }
 }

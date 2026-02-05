@@ -24,13 +24,14 @@ public class ProcedureDaoImpl implements ProcedureDao {
   }
 
   @Override
-  public void addRating(int procedureId, int rating) throws DaoException {
+  public boolean addRating(int procedureId, int rating) throws DaoException {
     try (Connection connection = ConnectionPool.getInstance().getConnection();
          PreparedStatement ps = connection.prepareStatement(ConstantSql.INSERT_RATING_PROCEDURE)) {
       ps.setDouble(1, rating);
       ps.setDouble(2, rating);
       ps.setInt(3, procedureId);
-      ps.executeUpdate();
+      int countUpdatedLines = ps.executeUpdate();
+      return countUpdatedLines == 1;
     } catch (SQLException | ConnectionException e) {
       LOGGER.error("Error when changing rating" + e);
       throw new DaoException(e);

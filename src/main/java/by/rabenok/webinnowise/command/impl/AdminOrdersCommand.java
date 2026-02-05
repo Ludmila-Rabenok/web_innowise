@@ -7,8 +7,7 @@ import by.rabenok.webinnowise.exception.CommandException;
 import by.rabenok.webinnowise.exception.ServiceException;
 import by.rabenok.webinnowise.model.Order;
 import by.rabenok.webinnowise.model.Role;
-import by.rabenok.webinnowise.service.OrderService;
-import by.OrderServiceImpl;
+import by.rabenok.webinnowise.service.impl.OrderServiceImpl;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -17,12 +16,11 @@ public class AdminOrdersCommand implements Command {
 
   @Override
   public String execute(HttpServletRequest request) throws CommandException {
-    OrderService orderService = OrderServiceImpl.getInstance();
     String role = (String) request.getSession().getAttribute(RequestAttributeName.ROLE);
     String page;
     try {
       if (Role.ADMIN.name().equalsIgnoreCase(role)) {
-        List<Order> orders = orderService.findAll();
+        List<Order> orders = OrderServiceImpl.getInstance().findAll();
         request.setAttribute(RequestAttributeName.ORDERS, orders);
         page = PagePath.ADMIN_ORDERS;
       } else page = PagePath.INDEX_JSP;

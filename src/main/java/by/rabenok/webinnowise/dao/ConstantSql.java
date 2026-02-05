@@ -14,6 +14,7 @@ public final class ConstantSql {
   public static final String SELECT_ORDERS_BY_ID = "SELECT o.id AS order_id, o.lead_time AS order_lead_time, o.status AS order_status, o.bill AS order_bill, u.id AS user_id, u.name AS user_name, u.role AS user_role, p.id AS procedure_id, p.name AS procedure_name, p.price AS procedure_price, p.rating_average, p.rating_count FROM orders o JOIN users u ON o.user_id = u.id LEFT JOIN order_procedure op ON o.id = op.order_id LEFT JOIN procedures p ON op.procedure_id = p.id WHERE o.id = ?";
 
   public static final String DELETE_ORDER_BY_ID = "DELETE FROM orders WHERE id = ?";
+
   private ConstantSql() {
   }
 }

@@ -1,4 +1,4 @@
-package by;
+package by.rabenok.webinnowise.service.impl;
 
 import by.rabenok.webinnowise.dao.impl.ProcedureDaoImpl;
 import by.rabenok.webinnowise.exception.DaoException;
@@ -30,7 +30,11 @@ public class ProcedureServiceImpl implements ProcedureService {
       throw new ServiceException(e);
     }
     try {
-      ProcedureDaoImpl.getInstance().addRating(procedureId, rating);
+      boolean isEvaluated = ProcedureDaoImpl.getInstance().addRating(procedureId, rating);
+      if (!isEvaluated) {
+        LOGGER.error("Rating was not added for procedure id={}", procedureId);
+        throw new ServiceException("Rating was not added");
+      }
     } catch (DaoException e) {
       LOGGER.error("Error evaluating procedure id={}", procedureId, e);
       throw new ServiceException(e);

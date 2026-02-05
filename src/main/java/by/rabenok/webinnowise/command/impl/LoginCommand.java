@@ -8,7 +8,7 @@ import by.rabenok.webinnowise.exception.CommandException;
 import by.rabenok.webinnowise.exception.ServiceException;
 import by.rabenok.webinnowise.model.Role;
 import by.rabenok.webinnowise.service.UserService;
-import by.UserServiceImpl;
+import by.rabenok.webinnowise.service.impl.UserServiceImpl;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;

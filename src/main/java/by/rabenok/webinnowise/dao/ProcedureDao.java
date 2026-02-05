@@ -4,5 +4,5 @@ import by.rabenok.webinnowise.exception.DaoException;
 
 public interface ProcedureDao {
 
-  void addRating(int procedureId, int rating) throws DaoException;
+  boolean addRating(int procedureId, int rating) throws DaoException;
 }

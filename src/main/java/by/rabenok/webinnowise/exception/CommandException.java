@@ -1,6 +1,6 @@
 package by.rabenok.webinnowise.exception;
 
-public class CommandException extends Exception{
+public class CommandException extends Exception {
   public CommandException() {
   }
 

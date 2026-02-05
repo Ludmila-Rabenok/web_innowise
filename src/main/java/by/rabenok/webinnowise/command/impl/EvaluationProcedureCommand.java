@@ -5,8 +5,7 @@ import by.rabenok.webinnowise.controller.PagePath;
 import by.rabenok.webinnowise.controller.RequestParameterName;
 import by.rabenok.webinnowise.exception.CommandException;
 import by.rabenok.webinnowise.exception.ServiceException;
-import by.rabenok.webinnowise.service.ProcedureService;
-import by.ProcedureServiceImpl;
+import by.rabenok.webinnowise.service.impl.ProcedureServiceImpl;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -14,17 +13,14 @@ public class EvaluationProcedureCommand implements Command {
 
   @Override
   public String execute(HttpServletRequest request) throws CommandException {
-    String procedureId = request.getParameter(RequestParameterName.PROCEDURE_ID);
+    String procedureIdStr = request.getParameter(RequestParameterName.PROCEDURE_ID);
     String ratingStr = request.getParameter(RequestParameterName.RATING);
-    ProcedureService procedureService = ProcedureServiceImpl.getInstance();
-    String page;
     try {
-      procedureService.evaluate(procedureId, ratingStr);
-      page = PagePath.RATING_PROCEDURE;
+      ProcedureServiceImpl.getInstance().evaluate(procedureIdStr, ratingStr);
+      return PagePath.RATING_PROCEDURE;
     } catch (ServiceException e) {
       LOGGER.error(e.getMessage());
       throw new CommandException(e);
     }
-    return page;
   }
 }

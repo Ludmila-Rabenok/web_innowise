@@ -90,13 +90,14 @@ public class OrderDaoImpl implements OrderDao {
   }
 
   @Override
-  public void updateStatusAndBill(Order order) throws DaoException {
+  public boolean updateStatusAndBill(Order order) throws DaoException {
     try (Connection connection = ConnectionPool.getInstance().getConnection()) {
       try (PreparedStatement updateStmt = connection.prepareStatement(ConstantSql.UPDATE_ORDER)) {
         updateStmt.setString(1, order.getStatus().name());
         updateStmt.setBigDecimal(2, order.getBill());
         updateStmt.setInt(3, order.getId());
-        updateStmt.executeUpdate();
+        int countUpdatedLines = updateStmt.executeUpdate();
+        return countUpdatedLines == 1;
       }
     } catch (ConnectionException | SQLException e) {
       LOGGER.error("Error updating order with id: {}", order.getId(), e);
@@ -155,17 +156,15 @@ public class OrderDaoImpl implements OrderDao {
 
   @Override
   public boolean remove(int id) throws DaoException {
-    boolean result;
     try (Connection connection = ConnectionPool.getInstance().getConnection();
          PreparedStatement preparedStatement = connection.prepareStatement(ConstantSql.DELETE_ORDER_BY_ID)) {
       preparedStatement.setInt(1, id);
       int executeUpdate = preparedStatement.executeUpdate();
-      result = executeUpdate == 1;
+      return executeUpdate == 1;
     } catch (ConnectionException | SQLException e) {
       LOGGER.error("Error removed order by id: {}", id, e);
       throw new DaoException(e);
     }
-    return result;
   }
 
   private Order buildOrder(ResultSet resultSet) throws SQLException {

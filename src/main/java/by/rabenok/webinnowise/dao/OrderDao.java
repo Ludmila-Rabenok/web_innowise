@@ -11,7 +11,7 @@ public interface OrderDao {
 
   void save(Order order, String[] procedures) throws DaoException;
 
-  void updateStatusAndBill(Order order) throws DaoException;
+  boolean updateStatusAndBill(Order order) throws DaoException;
 
   List<Order> findAll() throws DaoException;
 
